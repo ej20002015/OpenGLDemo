@@ -1,0 +1,11 @@
+﻿  Main.cpp
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(199,35): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(189,41): warning C4101: 'camZ': unreferenced local variable
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(189,35): warning C4101: 'camX': unreferenced local variable
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(258,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(259,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(263,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(264,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(265,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Development\Projects\OpenGLDemo\OpenGLDemo\src\Main.cpp(266,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  OpenGLDemo.vcxproj -> C:\Development\Projects\OpenGLDemo\bin\x64\Debug\OpenGLDemo.exe
