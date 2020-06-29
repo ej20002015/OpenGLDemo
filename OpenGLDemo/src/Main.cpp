@@ -8,6 +8,7 @@
 #include "VertexArray.h"
 #include "Texture.h"
 #include "PerspectiveCamera.h"
+#include "FreeCamera.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
@@ -16,13 +17,7 @@
 #include <iostream>
 #include <math.h>
 
-void processInput(GLFWwindow* window, glm::vec3& cameraPosition, glm::vec3& cameraFront, float cameraSpeed);
-void mouseCallback(GLFWwindow* window, double xPos, double yPos);
-
-float lastX = 320, lastY = 240;
-float yaw = -90.0f, pitch = 0.0f;
-glm::vec3 cameraFront(0.0f, 0.0f, -1.0f);
-bool firstMouse = true;
+void processInput(GLFWwindow* window, const float deltaTime, FreeCamera& freeCamera);
 
 int main()
 {
@@ -33,7 +28,14 @@ int main()
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Demo", NULL, NULL);
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    float height = mode->height;
+    float width = mode->width;
+
+    window = glfwCreateWindow(width, height, "Demo", monitor, NULL);
+
     if (!window)
     {
         glfwTerminate();
@@ -54,6 +56,9 @@ int main()
     std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
 
     Renderer::initDebug();
+
+    //Set up glfw mouse input
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     //Set frame rate of window
     glfwSwapInterval(1);
@@ -169,12 +174,10 @@ int main()
 
     glm::vec3 cameraPosition(0.0f, 0.0f, 3.0f);
 
-    PerspectiveCamera camera(glm::radians(60.0f), 2.0f / 1.5f, 0.001f, 100.0f, cameraPosition, cameraPosition + cameraFront);
+    PerspectiveCamera camera(glm::radians(60.0f), width / height, 0.001f, 100.0f, cameraPosition, cameraPosition + glm::vec3(0.0f, 0.0f, -1.0f));
+    FreeCamera freeCamera(camera, width, height);
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window, mouseCallback);
-
-    glm::mat4 MVP = camera.getProjectionViewMatrix() * modelMatrix;
+    glm::mat4 MVP = freeCamera.getProjectionViewMatrix() * modelMatrix;
 
     //Get ready to render
 
@@ -200,7 +203,7 @@ int main()
         deltaFrameTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        processInput(window, cameraPosition, cameraFront, 1.0f * deltaFrameTime);
+        processInput(window, deltaFrameTime, freeCamera);
 
         /* Render here */
         renderer.clear();
@@ -212,9 +215,7 @@ int main()
         //camX = sin(x * 0.2) * radius;
         //camZ = cos(x * 0.2) * radius;
 
-        camera.setPostion(cameraPosition);
-        camera.setTarget(cameraPosition + cameraFront);
-        MVP = camera.getProjectionViewMatrix() * modelMatrix;
+        MVP = freeCamera.getProjectionViewMatrix() * modelMatrix;
 
         program.setUniformMat4f("u_MVP", MVP);
 
@@ -234,53 +235,21 @@ int main()
     return 0;
 }
 
-void processInput(GLFWwindow* window, glm::vec3& cameraPostion, glm::vec3& cameraFront, float cameraSpeed)
+void processInput(GLFWwindow* window, const float deltaTime, FreeCamera& freeCamera)
 {
-    
-
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPostion += cameraFront * cameraSpeed;
+        freeCamera.moveForward(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPostion -= cameraFront * cameraSpeed;
+        freeCamera.moveBackward(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPostion += glm::normalize(glm::cross(cameraFront, { 0.0f, 1.0f, 0.0f }))* cameraSpeed;
+        freeCamera.strafeRight(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPostion -= glm::normalize(glm::cross(cameraFront, { 0.0f, 1.0f, 0.0f })) * cameraSpeed;
-}
+        freeCamera.strafeLeft(deltaTime);
 
-void mouseCallback(GLFWwindow* window, double xPos, double yPos)
-{
-    if (firstMouse)
-    {
-        lastX = xPos;
-        lastY = yPos;
-        firstMouse = false;
-    }
-
-    float xOffset = xPos - lastX;
-    float yOffset = yPos - lastY;
-    lastX = xPos;
-    lastY = yPos;
-
-    const float sensitivity = 0.2f;
-    xOffset *= sensitivity;
-    yOffset *= sensitivity;
-
-    yaw += xOffset;
-    pitch -= yOffset;
-
-    //Constrain camera angle to stop flipping
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    else if (pitch < -89.0f)
-        pitch = -89.0f;
-
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
+    double xPos, yPos;
+    glfwGetCursorPos(window, &xPos, &yPos);
+    freeCamera.changeCameraDirection(xPos, yPos);
 }

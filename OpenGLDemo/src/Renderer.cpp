@@ -8,8 +8,8 @@ void GLAPIENTRY debugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
     std::cerr << "GL CALLBACK: " << (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "")
         << "type = " << std::hex << type << ", severity = " << severity << ", message = "
         << message << std::endl;
-    std::cin.get();
-    exit(1);
+    //std::cin.get();
+    //exit(1);
 }
 
 void Renderer::draw(const VertexArray& vertexArray, const IndexBuffer& indexBuffer, const Program& program) const
