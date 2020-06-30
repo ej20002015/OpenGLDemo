@@ -934,7 +934,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\Basic.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -1343,5 +1342,8 @@
     <None Include="src\vendor\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="res\shaders\Texture.shader" />
+    <None Include="res\shaders\Lighting.shader" />
+    <None Include="res\shaders\LightSource.shader" />
   </ItemGroup>
 </Project>

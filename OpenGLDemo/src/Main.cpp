@@ -33,8 +33,10 @@ int main()
 
     float height = mode->height;
     float width = mode->width;
+    width = 680.0f;
+    height = 420.0f;
 
-    window = glfwCreateWindow(width, height, "Demo", monitor, NULL);
+    window = glfwCreateWindow(width, height, "Demo", NULL, NULL);
 
     if (!window)
     {
@@ -62,14 +64,6 @@ int main()
 
     //Set frame rate of window
     glfwSwapInterval(1);
-
-    float vertexDataSquare[] =
-    {
-        -0.5f,  0.5f, 0.0f, 1.0f,
-         0.5f,  0.5f, 1.0f, 1.0f,
-        -0.5f, -0.5f, 0.0f, 0.0f,
-         0.5f, -0.5f, 1.0f, 0.0f
-    };
 
     float vertexDataCube[] =
     {
@@ -116,12 +110,6 @@ int main()
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    uint32_t triangleIndexesSquare[] =
-    {
-        0, 1, 2,
-        0, 2, 3
-    };
-
     uint32_t triangleIndexesCube[] =
     {
         0, 1, 2,
@@ -150,24 +138,36 @@ int main()
     //Enable z-buffer
     glEnable(GL_DEPTH_TEST);
 
-    VertexArray vertexArray;
+    //SET UP DATA FOR CUBE
+
+    VertexArray vertexArrayCube;
 
     //Initialise vertex buffer with data
-    VertexBuffer vertexBuffer(vertexDataCube, 5 * 36 * sizeof(float));
+    VertexBuffer vertexBufferCube(vertexDataCube, 5 * 36 * sizeof(float));
     //Give attributes of each vertex
-    VertexBufferLayout vertexBufferLayout;
+    VertexBufferLayout vertexBufferLayoutCube;
     //Vertex coordinates
-    vertexBufferLayout.push<float>(3);
+    vertexBufferLayoutCube.push<float>(3);
     //Vertex texture coordinates
-    vertexBufferLayout.push<float>(2);
-    vertexArray.addBuffer(vertexBuffer, vertexBufferLayout);
+    vertexBufferLayoutCube.push<float>(2);
+    vertexArrayCube.addBuffer(vertexBufferCube, vertexBufferLayoutCube);
 
     //Initialise index buffer with data
-    IndexBuffer indexBuffer(triangleIndexesCube, 3 * 2 * 6);
+    IndexBuffer indexBufferCube(triangleIndexesCube, 3 * 2 * 6);
 
-    //Set up MVP
-    glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    //modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    //SET UP DATA FOR LIGHT
+    VertexArray vertexArrayLight;
+    VertexBuffer vertexBufferLight(vertexDataCube, 5 * 36 * sizeof(float));
+    VertexBufferLayout vertexBufferLayoutLight;
+    vertexBufferLayoutLight.push<float>(3);
+    vertexBufferLayoutLight.push<float>(2);
+    vertexArrayLight.addBuffer(vertexBufferLight, vertexBufferLayoutLight);
+    IndexBuffer indexBufferLight(triangleIndexesCube, 3 * 2 * 6);
+
+    //Set up Model matrices
+    glm::mat4 modelMatrixCube = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+    glm::mat4 modelMatrixLight = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, -1.0f));
+    modelMatrixLight = glm::scale(modelMatrixLight, glm::vec3(0.4f));
 
 
     //For free camera
@@ -177,17 +177,18 @@ int main()
     PerspectiveCamera camera(glm::radians(60.0f), width / height, 0.001f, 100.0f, cameraPosition, cameraPosition + glm::vec3(0.0f, 0.0f, -1.0f));
     FreeCamera freeCamera(camera, width, height);
 
-    glm::mat4 MVP = freeCamera.getProjectionViewMatrix() * modelMatrix;
-
     //Get ready to render
+    glm::mat4 MVPCube, MVPLight;
 
-    Program program("res/shaders/Basic.shader");
-    program.bind();
+    Program programLighting("res/shaders/Lighting.shader");
+    Program programLightSource("res/shaders/LightSource.shader");
+    
 
-    Texture texture("res/textures/wood.jpg");
+    /*Texture texture("res/textures/wood.jpg");
     texture.bind(0);
-    program.setUniform1i("u_Texture", 0);
-    program.setUniformMat4f("u_MVP", MVP);
+    program.setUniform1i("u_Texture", 0);*/
+    
+    //program.setUniformMat4f("u_MVP", MVP);
 
     float rValue, gValue, bValue, camX, camZ, x = 0.0f, delta = 0.05f, radius = 10.0f;
 
@@ -208,19 +209,35 @@ int main()
         /* Render here */
         renderer.clear();
 
-        rValue = (sin(x) + 1.0f) * 0.5f;
+        /*rValue = (sin(x) + 1.0f) * 0.5f;
         gValue = (sin(x + 1.0f) + 1.0f) * 0.5f;
-        bValue = (sin(x + 2.0f) + 1.0f) * 0.5f;
+        bValue = (sin(x + 2.0f) + 1.0f) * 0.5f;*/
 
         //camX = sin(x * 0.2) * radius;
         //camZ = cos(x * 0.2) * radius;
 
-        MVP = freeCamera.getProjectionViewMatrix() * modelMatrix;
 
-        program.setUniformMat4f("u_MVP", MVP);
+        //Draw cube
+        MVPCube = freeCamera.getProjectionViewMatrix() * modelMatrixCube;
 
-        program.setUniform4f("u_Color", rValue, gValue, bValue, 1.0f);
-        renderer.draw(vertexArray, indexBuffer, program);
+        programLighting.bind();
+
+        programLighting.setUniformMat4f("u_MVP", MVPCube);
+
+        programLighting.setUniform4f("objectColour", 1.0f, 0.5f, 0.31f, 1.0f);
+        programLighting.setUniform4f("lightColour", 1.0f, 1.0f, 1.0f, 1.0f);
+
+        renderer.draw(vertexArrayCube, indexBufferCube, programLighting);
+
+        //Draw light
+        MVPLight = freeCamera.getProjectionViewMatrix() * modelMatrixLight;
+
+        programLightSource.bind();
+
+        programLightSource.setUniformMat4f("u_MVP", MVPLight);
+
+        renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
+
 
         x += delta;
 
