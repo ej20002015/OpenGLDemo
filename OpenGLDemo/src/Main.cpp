@@ -67,47 +67,47 @@ int main()
 
     float vertexDataCube[] =
     {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f
     };
 
     uint32_t triangleIndexesCube[] =
@@ -143,13 +143,15 @@ int main()
     VertexArray vertexArrayCube;
 
     //Initialise vertex buffer with data
-    VertexBuffer vertexBufferCube(vertexDataCube, 5 * 36 * sizeof(float));
+    VertexBuffer vertexBufferCube(vertexDataCube, 8 * 36 * sizeof(float));
     //Give attributes of each vertex
     VertexBufferLayout vertexBufferLayoutCube;
     //Vertex coordinates
     vertexBufferLayoutCube.push<float>(3);
     //Vertex texture coordinates
     vertexBufferLayoutCube.push<float>(2);
+    //Vertex normal coordinates
+    vertexBufferLayoutCube.push<float>(3);
     vertexArrayCube.addBuffer(vertexBufferCube, vertexBufferLayoutCube);
 
     //Initialise index buffer with data
@@ -157,29 +159,29 @@ int main()
 
     //SET UP DATA FOR LIGHT
     VertexArray vertexArrayLight;
-    VertexBuffer vertexBufferLight(vertexDataCube, 5 * 36 * sizeof(float));
+    VertexBuffer vertexBufferLight(vertexDataCube, 8 * 36 * sizeof(float));
     VertexBufferLayout vertexBufferLayoutLight;
     vertexBufferLayoutLight.push<float>(3);
     vertexBufferLayoutLight.push<float>(2);
+    vertexBufferLayoutLight.push<float>(3);
     vertexArrayLight.addBuffer(vertexBufferLight, vertexBufferLayoutLight);
     IndexBuffer indexBufferLight(triangleIndexesCube, 3 * 2 * 6);
 
     //Set up Model matrices
     glm::mat4 modelMatrixCube = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-    glm::mat4 modelMatrixLight = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, -1.0f));
+    glm::vec3 lightPosition(1.0f, 1.0f, 1.5f);
+    glm::mat4 modelMatrixLight = glm::translate(glm::mat4(1.0f), lightPosition);
     modelMatrixLight = glm::scale(modelMatrixLight, glm::vec3(0.4f));
 
 
     //For free camera
 
-    glm::vec3 cameraPosition(0.0f, 0.0f, 3.0f);
+    glm::vec3 cameraInitialPosition(0.0f, 0.0f, 4.0f);
 
-    PerspectiveCamera camera(glm::radians(60.0f), width / height, 0.001f, 100.0f, cameraPosition, cameraPosition + glm::vec3(0.0f, 0.0f, -1.0f));
+    PerspectiveCamera camera(glm::radians(60.0f), width / height, 0.001f, 100.0f, cameraInitialPosition, cameraInitialPosition + glm::vec3(0.0f, 0.0f, -1.0f));
     FreeCamera freeCamera(camera, width, height);
 
     //Get ready to render
-    glm::mat4 MVPCube, MVPLight;
-
     Program programLighting("res/shaders/Lighting.shader");
     Program programLightSource("res/shaders/LightSource.shader");
     
@@ -216,25 +218,30 @@ int main()
         //camX = sin(x * 0.2) * radius;
         //camZ = cos(x * 0.2) * radius;
 
+        glm::mat4 viewMatrix = freeCamera.getViewMatrix();
+        glm::mat4 projectionMatrix = freeCamera.getProjectionMatrix();
 
         //Draw cube
-        MVPCube = freeCamera.getProjectionViewMatrix() * modelMatrixCube;
-
         programLighting.bind();
 
-        programLighting.setUniformMat4f("u_MVP", MVPCube);
+        programLighting.setUniformMat4f("u_modelMatrix", modelMatrixCube);
+        programLighting.setUniformMat4f("u_viewMatrix", viewMatrix);
+        programLighting.setUniformMat4f("u_projectionMatrix", projectionMatrix);
 
-        programLighting.setUniform4f("objectColour", 1.0f, 0.5f, 0.31f, 1.0f);
-        programLighting.setUniform4f("lightColour", 1.0f, 1.0f, 1.0f, 1.0f);
+        programLighting.setUniform4f("u_objectColour", 1.0f, 0.5f, 0.31f, 1.0f);
+        programLighting.setUniform4f("u_lightColour", 1.0f, 1.0f, 1.0f, 1.0f);
+        programLighting.setUniform3f("u_lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+        glm::vec3 cameraPosition = freeCamera.getPerspectiveCamera().getPosition();
+        programLighting.setUniform3f("u_cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
         renderer.draw(vertexArrayCube, indexBufferCube, programLighting);
 
         //Draw light
-        MVPLight = freeCamera.getProjectionViewMatrix() * modelMatrixLight;
-
         programLightSource.bind();
 
-        programLightSource.setUniformMat4f("u_MVP", MVPLight);
+        programLightSource.setUniformMat4f("u_modelMatrix", modelMatrixLight);
+        programLightSource.setUniformMat4f("u_viewMatrix", viewMatrix);
+        programLightSource.setUniformMat4f("u_projectionMatrix", projectionMatrix);
 
         renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
 

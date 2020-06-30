@@ -14,6 +14,7 @@ public:
 	~Program();
 
 	void setUniform1i(const std::string& name, int32_t i0);
+	void setUniform3f(const std::string& name, float f0, float f1, float f2);
 	void setUniform4f(const std::string& name, float f0, float f1, float f2, float f3);
 
 	void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
