@@ -12,17 +12,16 @@ Texture::Texture(const std::string& filePath)
 
 	localBuffer = stbi_load(filePath.c_str(), &width, &height, &bytesPerPixel, 4);
 
-	glGenTextures(1, &ID);
-	glBindTexture(GL_TEXTURE_2D, ID);
+	glCreateTextures(GL_TEXTURE_2D, 1, &ID);
+	glTextureStorage2D(ID, 1, GL_RGBA8, width, height);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTextureParameteri(ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureParameteri(ID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(ID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, localBuffer);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glTextureSubImage2D(ID, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, localBuffer);
+	glGenerateTextureMipmap(ID);
 
 	//Free cpu memory now its on the GPU
 	if (localBuffer)
@@ -37,8 +36,7 @@ Texture::~Texture()
 
 void Texture::bind(uint32_t slot) const
 {
-	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, ID);
+	glBindTextureUnit(slot, ID);
 }
 
 void Texture::unbind() const

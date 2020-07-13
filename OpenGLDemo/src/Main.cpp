@@ -224,8 +224,8 @@ int main()
 
         //Set material for cube
         programLighting.setUniform1f("u_material.shininess", 32.0f);
-        programLighting.setUniform1i("u_material.diffuse", 1);
-        programLighting.setUniform1i("u_material.specular", 0);
+        programLighting.setUniform1i("u_material.diffuse", 0);
+        programLighting.setUniform1i("u_material.specular", 1);
 
         //Set light properties
 
