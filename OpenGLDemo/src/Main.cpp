@@ -185,14 +185,15 @@ int main()
     Program programLighting("res/shaders/Lighting.shader");
     Program programLightSource("res/shaders/LightSource.shader");
     
+    //Get diffuse and specular maps
 
-    /*Texture texture("res/textures/wood.jpg");
-    texture.bind(0);
-    program.setUniform1i("u_Texture", 0);*/
+    Texture diffuseMap("res/textures/container2.png");
+    diffuseMap.bind(0);
+
+    Texture specularMap("res/textures/container2Specular.png");
+    specularMap.bind(1);
     
-    //program.setUniformMat4f("u_MVP", MVP);
-
-    float rValue, gValue, bValue, camX, camZ, x = 0.0f, delta = 0.05f, radius = 10.0f;
+    float rValue, gValue, bValue, camX, camZ, x = 0.0f, delta = 0.5f, radius = 10.0f;
 
     float currentFrame, deltaFrameTime = 0.0f, lastFrame = 0.0f;
 
@@ -211,33 +212,46 @@ int main()
         /* Render here */
         renderer.clear();
 
-        /*rValue = (sin(x) + 1.0f) * 0.5f;
-        gValue = (sin(x + 1.0f) + 1.0f) * 0.5f;
-        bValue = (sin(x + 2.0f) + 1.0f) * 0.5f;*/
-
-        //camX = sin(x * 0.2) * radius;
-        //camZ = cos(x * 0.2) * radius;
-
         glm::mat4 viewMatrix = freeCamera.getViewMatrix();
         glm::mat4 projectionMatrix = freeCamera.getProjectionMatrix();
 
-        //Draw cube
+        //DRAW CUBE
         programLighting.bind();
 
         programLighting.setUniformMat4f("u_modelMatrix", modelMatrixCube);
         programLighting.setUniformMat4f("u_viewMatrix", viewMatrix);
         programLighting.setUniformMat4f("u_projectionMatrix", projectionMatrix);
 
-        programLighting.setUniform4f("u_objectColour", 1.0f, 0.5f, 0.31f, 1.0f);
-        programLighting.setUniform4f("u_lightColour", 1.0f, 1.0f, 1.0f, 1.0f);
-        programLighting.setUniform3f("u_lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+        //Set material for cube
+        programLighting.setUniform1f("u_material.shininess", 32.0f);
+        programLighting.setUniform1i("u_material.diffuse", 1);
+        programLighting.setUniform1i("u_material.specular", 0);
+
+        //Set light properties
+
+        glm::vec3 lightColour(1.0f);
+        /*lightColour.x = (sin(x * 2.0f) + 1.0f) * 0.5f;
+        lightColour.y = (sin(x * 0.7f) + 1.0f) * 0.5f;
+        lightColour.z = (sin(x * 1.3f) + 1.0f) * 0.5f;*/
+        
+        glm::vec3 ambient = glm::vec3(0.2f) * lightColour;
+        glm::vec3 diffuse = glm::vec3(0.5f) * lightColour;
+
+        programLighting.setUniform3f("u_light.position", lightPosition.x, lightPosition.y, lightPosition.z);
+        programLighting.setUniform4f("u_light.ambient", ambient.x, ambient.y, ambient.z, 1.0f);
+        programLighting.setUniform4f("u_light.diffuse", diffuse.x, diffuse.y, diffuse.z, 1.0f);
+        programLighting.setUniform4f("u_light.specular", 1.0f, 1.0f, 1.0f, 1.0f);
+        
+        //Set camera position
         glm::vec3 cameraPosition = freeCamera.getPerspectiveCamera().getPosition();
         programLighting.setUniform3f("u_cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
         renderer.draw(vertexArrayCube, indexBufferCube, programLighting);
 
-        //Draw light
+        //DRAW LIGHT
         programLightSource.bind();
+
+        programLightSource.setUniform4f("u_lightColour", lightColour.x, lightColour.y, lightColour.z, 1.0f);
 
         programLightSource.setUniformMat4f("u_modelMatrix", modelMatrixLight);
         programLightSource.setUniformMat4f("u_viewMatrix", viewMatrix);
@@ -246,7 +260,7 @@ int main()
         renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
 
 
-        x += delta;
+        x += delta * deltaFrameTime;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
