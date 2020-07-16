@@ -16,6 +16,14 @@
 
 #include <iostream>
 #include <math.h>
+#include <algorithm>
+
+
+float clamp(float n, float lower, float upper) 
+{
+    return std::max(lower, std::min(n, upper));
+}
+
 
 void processInput(GLFWwindow* window, const float deltaTime, FreeCamera& freeCamera);
 
@@ -33,8 +41,8 @@ int main()
 
     float height = mode->height;
     float width = mode->width;
-    width = 680.0f;
-    height = 420.0f;
+    width = 1920.0f;
+    height = 1080.0f;
 
     window = glfwCreateWindow(width, height, "Demo", NULL, NULL);
 
@@ -140,6 +148,15 @@ int main()
 
     //SET UP DATA FOR CUBE
 
+    glm::vec3 cubePositions[5]
+    {
+        glm::vec3(10.0f, 1.0f, 2.0f),
+        glm::vec3(-4.0f, 0.0f, 1.0f),
+        glm::vec3(2.0f, -1.0f, -5.5f),
+        glm::vec3(-1.0f, -4.0f, -1.5f),
+        glm::vec3(1.0f, 4.0f, -1.5f),
+    };
+
     VertexArray vertexArrayCube;
 
     //Initialise vertex buffer with data
@@ -158,6 +175,15 @@ int main()
     IndexBuffer indexBufferCube(triangleIndexesCube, 3 * 2 * 6);
 
     //SET UP DATA FOR LIGHT
+
+    glm::vec3 pointLightPositions[4]
+    {
+        glm::vec3(1.0f, 1.0f, 1.5f),
+        glm::vec3(-1.0f, 1.0f, 1.5f),
+        glm::vec3(1.0f, -1.0f, -1.5f),
+        glm::vec3(-1.0f, -1.0f, -1.5f),
+    };
+
     VertexArray vertexArrayLight;
     VertexBuffer vertexBufferLight(vertexDataCube, 8 * 36 * sizeof(float));
     VertexBufferLayout vertexBufferLayoutLight;
@@ -169,9 +195,22 @@ int main()
 
     //Set up Model matrices
     glm::mat4 modelMatrixCube = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-    glm::vec3 lightPosition(1.0f, 1.0f, 1.5f);
-    glm::mat4 modelMatrixLight = glm::translate(glm::mat4(1.0f), lightPosition);
-    modelMatrixLight = glm::scale(modelMatrixLight, glm::vec3(0.4f));
+
+    glm::mat4 cubeModelMatrices[5];
+    for (int i = 0; i < 5; ++i)
+    {
+        cubePositions[i] *= 1.0f;
+        cubeModelMatrices[i] = glm::translate(glm::mat4(1.0f), cubePositions[i]);
+        cubeModelMatrices[i] = glm::scale(cubeModelMatrices[i], glm::vec3(1.0f));
+    }
+
+    glm::mat4 pointLightModelMatrices[4];
+    for (int i = 0; i < 4; ++i)
+    {
+        pointLightPositions[i] *= 5.0f;
+        pointLightModelMatrices[i] = glm::translate(glm::mat4(1.0f), pointLightPositions[i]);
+        pointLightModelMatrices[i] = glm::scale(pointLightModelMatrices[i], glm::vec3(0.4f));
+    }
 
 
     //For free camera
@@ -227,7 +266,7 @@ int main()
         programLighting.setUniform1i("u_material.diffuse", 0);
         programLighting.setUniform1i("u_material.specular", 1);
 
-        //Set light properties
+        //SET LIGHT UNIFORMS
 
         glm::vec3 lightColour(1.0f);
         /*lightColour.x = (sin(x * 2.0f) + 1.0f) * 0.5f;
@@ -237,28 +276,86 @@ int main()
         glm::vec3 ambient = glm::vec3(0.2f) * lightColour;
         glm::vec3 diffuse = glm::vec3(0.5f) * lightColour;
 
-        programLighting.setUniform3f("u_light.position", lightPosition.x, lightPosition.y, lightPosition.z);
-        programLighting.setUniform4f("u_light.ambient", ambient.x, ambient.y, ambient.z, 1.0f);
-        programLighting.setUniform4f("u_light.diffuse", diffuse.x, diffuse.y, diffuse.z, 1.0f);
-        programLighting.setUniform4f("u_light.specular", 1.0f, 1.0f, 1.0f, 1.0f);
+
+        //Set uniforms for directional light
+        programLighting.setUniform3f("u_directionalLight.direction", -0.2f, -1.0f, -0.3f);
+
+
+        programLighting.setUniform3f("u_directionalLight.ambient", ambient.x, ambient.y, ambient.z);
+        programLighting.setUniform3f("u_directionalLight.diffuse", diffuse.x, diffuse.y, diffuse.z);
+        programLighting.setUniform3f("u_directionalLight.specular", 1.0f, 1.0f, 1.0f);
+
+        //Set uniforms for 4 point lights
+        
+        for (int i = 0; i < 4; ++i)
+        {
+            programLighting.setUniform3f("u_pointLight[" + std::to_string(i) + "].position", pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
+
+            programLighting.setUniform3f("u_pointLight[" + std::to_string(i) + "].ambient", ambient.x, ambient.y, ambient.z);
+            programLighting.setUniform3f("u_pointLight[" + std::to_string(i) + "].diffuse", diffuse.x, diffuse.y, diffuse.z);
+            programLighting.setUniform3f("u_pointLight[" + std::to_string(i) + "].specular", 1.0f, 1.0f, 1.0f);
+                                                       
+            programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].constantTerm", 1.0f);
+            programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].linearTerm", 0.09f);
+            programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].quadraticTerm", 0.032f);
+        }
+
+        //Set uniforms for spotlight coming from the camera
+        glm::vec3 cameraPosition = freeCamera.getPerspectiveCamera().getPosition();
+        glm::vec3 cameraDirection = freeCamera.getDirection();
+
+        glm::vec4 projectionCubeCoordinates = freeCamera.getProjectionMatrix() * freeCamera.getViewMatrix() * modelMatrixCube * glm::vec4(0.0f, 0.0f, 0.5f, 1.0f);
+        glm::vec3 coordinates(projectionCubeCoordinates.x, projectionCubeCoordinates.y, projectionCubeCoordinates.z);
+        float theta = glm::dot((glm::normalize(cameraPosition - coordinates)), glm::normalize(-cameraDirection));
+        float epsilon = glm::cos(glm::radians(11.5f)) - glm::cos(glm::radians(12.5f));
+        float intensity = clamp((theta - glm::cos(glm::radians(12.5f))) / epsilon, 0.0f, 1.0f);
+
+        std::cout << "Coordinates: " << coordinates.x << ", " << coordinates.y << ", " << coordinates.z;
+        std::cout << " | Camera direction: " << cameraDirection.x << ", " << cameraDirection.y << ", " << cameraDirection.z;
+        std::cout << " | Camera position: " << cameraPosition.x << ", " << cameraPosition.y << ", " << cameraPosition.z;
+        std::cout << " | theta: " << theta;
+        std::cout << " | epsilon: " << epsilon;
+        std::cout << " | intensity: " << intensity << std::endl;
+
+        programLighting.setUniform3f("u_spotLight.position", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        programLighting.setUniform3f("u_spotLight.direction", cameraDirection.x, cameraDirection.y, cameraDirection.z);
+
+        programLighting.setUniform3f("u_spotLight.ambient", ambient.x, ambient.y, ambient.z);
+        programLighting.setUniform3f("u_spotLight.diffuse", diffuse.x, diffuse.y, diffuse.z);
+        programLighting.setUniform3f("u_spotLight.specular", 1.0f, 1.0f, 1.0f);
+
+        programLighting.setUniform1f("u_spotLight.constantTerm", 1.0f);
+        programLighting.setUniform1f("u_spotLight.linearTerm", 0.09f);
+        programLighting.setUniform1f("u_spotLight.quadraticTerm", 0.032f);
+
+        programLighting.setUniform1f("u_spotLight.cutoff", glm::cos(glm::radians(11.5f)));
+        programLighting.setUniform1f("u_spotLight.outerCutoff", glm::cos(glm::radians(12.5f)));
         
         //Set camera position
-        glm::vec3 cameraPosition = freeCamera.getPerspectiveCamera().getPosition();
         programLighting.setUniform3f("u_cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        programLighting.setUniform3f("u_cameraDirection", cameraDirection.x, cameraDirection.y, cameraDirection.z);
 
-        renderer.draw(vertexArrayCube, indexBufferCube, programLighting);
+        //Draw the four point lights
+        for (int i = 0; i < 4; ++i)
+        {
+            programLighting.setUniformMat4f("u_modelMatrix", modelMatrixCube);
+            renderer.draw(vertexArrayCube, indexBufferCube, programLighting);
+        }
 
         //DRAW LIGHT
         programLightSource.bind();
 
         programLightSource.setUniform4f("u_lightColour", lightColour.x, lightColour.y, lightColour.z, 1.0f);
 
-        programLightSource.setUniformMat4f("u_modelMatrix", modelMatrixLight);
         programLightSource.setUniformMat4f("u_viewMatrix", viewMatrix);
         programLightSource.setUniformMat4f("u_projectionMatrix", projectionMatrix);
 
-        renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
-
+        //Draw the four point lights
+        for (int i = 0; i < 4; ++i)
+        {
+            programLightSource.setUniformMat4f("u_modelMatrix", pointLightModelMatrices[i]);
+            renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
+        }
 
         x += delta * deltaFrameTime;
 

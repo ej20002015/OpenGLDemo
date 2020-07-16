@@ -1343,7 +1343,7 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="res\shaders\Texture.shader" />
-    <None Include="res\shaders\Lighting.shader" />
     <None Include="res\shaders\LightSource.shader" />
+    <None Include="res\shaders\Lighting.shader" />
   </ItemGroup>
 </Project>

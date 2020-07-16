@@ -21,6 +21,8 @@ public:
 	inline const float getSensitivity() const { return sensitivity; }
 	inline void setSensitivity(const float sensitivity) { this->sensitivity = sensitivity; }
 
+	inline const glm::vec3& getDirection() const { return cameraDirection; }
+
 	inline const glm::mat4& getProjectionViewMatrix() const { return perspectiveCamera.getProjectionViewMatrix(); }
 	inline const glm::mat4& getProjectionMatrix() const { return perspectiveCamera.getProjectionMatrix(); }
 	inline const glm::mat4& getViewMatrix() const { return perspectiveCamera.getViewMatrix(); }
