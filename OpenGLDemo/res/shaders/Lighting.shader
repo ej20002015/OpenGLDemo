@@ -98,9 +98,6 @@ void main()
 	vec3 viewDirection = normalize(u_cameraPosition - fragmentPosition);
 
 	//Calculate contribution of each light
-
-	vec3 outputColour= vec3(0.0f);
-
 	vec3 outputColour = calculateDirectionalLight(u_directionalLight, normalisedNormal, viewDirection);
 
 	for (int i = 0; i < 4; ++i)
