@@ -304,19 +304,6 @@ int main()
         glm::vec3 cameraPosition = freeCamera.getPerspectiveCamera().getPosition();
         glm::vec3 cameraDirection = freeCamera.getDirection();
 
-        glm::vec4 projectionCubeCoordinates = freeCamera.getProjectionMatrix() * freeCamera.getViewMatrix() * modelMatrixCube * glm::vec4(0.0f, 0.0f, 0.5f, 1.0f);
-        glm::vec3 coordinates(projectionCubeCoordinates.x, projectionCubeCoordinates.y, projectionCubeCoordinates.z);
-        float theta = glm::dot((glm::normalize(cameraPosition - coordinates)), glm::normalize(-cameraDirection));
-        float epsilon = glm::cos(glm::radians(11.5f)) - glm::cos(glm::radians(12.5f));
-        float intensity = clamp((theta - glm::cos(glm::radians(12.5f))) / epsilon, 0.0f, 1.0f);
-
-        std::cout << "Coordinates: " << coordinates.x << ", " << coordinates.y << ", " << coordinates.z;
-        std::cout << " | Camera direction: " << cameraDirection.x << ", " << cameraDirection.y << ", " << cameraDirection.z;
-        std::cout << " | Camera position: " << cameraPosition.x << ", " << cameraPosition.y << ", " << cameraPosition.z;
-        std::cout << " | theta: " << theta;
-        std::cout << " | epsilon: " << epsilon;
-        std::cout << " | intensity: " << intensity << std::endl;
-
         programLighting.setUniform3f("u_spotLight.position", cameraPosition.x, cameraPosition.y, cameraPosition.z);
         programLighting.setUniform3f("u_spotLight.direction", cameraDirection.x, cameraDirection.y, cameraDirection.z);
 
@@ -328,8 +315,8 @@ int main()
         programLighting.setUniform1f("u_spotLight.linearTerm", 0.09f);
         programLighting.setUniform1f("u_spotLight.quadraticTerm", 0.032f);
 
-        programLighting.setUniform1f("u_spotLight.cutoff", glm::cos(glm::radians(11.5f)));
-        programLighting.setUniform1f("u_spotLight.outerCutoff", glm::cos(glm::radians(12.5f)));
+        programLighting.setUniform1f("u_spotLight.cutoff", glm::cos(glm::radians(15.5f)));
+        programLighting.setUniform1f("u_spotLight.outerCutoff", glm::cos(glm::radians(21.5f)));
         
         //Set camera position
         programLighting.setUniform3f("u_cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);

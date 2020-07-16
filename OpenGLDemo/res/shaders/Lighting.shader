@@ -17,7 +17,7 @@ void main()
 {
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * vec4(a_position, 1.0f);
 	normal = mat3(transpose(inverse(u_modelMatrix))) * a_normal;
-	fragmentPosition = vec3(u_viewMatrix * vec4(a_position, 1.0f));
+	fragmentPosition = vec3(u_modelMatrix * vec4(a_position, 1.0f));
 	texCoord = a_texCoord;
 };
 
@@ -99,19 +99,19 @@ void main()
 
 	//Calculate contribution of each light
 
-	vec3 output = vec3(0.0f);
+	vec3 outputColour= vec3(0.0f);
 
-	//vec3 output = calculateDirectionalLight(u_directionalLight, normalisedNormal, viewDirection);
+	vec3 outputColour = calculateDirectionalLight(u_directionalLight, normalisedNormal, viewDirection);
 
 	for (int i = 0; i < 4; ++i)
 	{
-		//output += calculatePointLight(u_pointLight[i], normalisedNormal, viewDirection, fragmentPosition);
+		outputColour += calculatePointLight(u_pointLight[i], normalisedNormal, viewDirection, fragmentPosition);
 	}
 
-	output += calculateSpotLight(u_spotLight, normalisedNormal, viewDirection, fragmentPosition);
+	outputColour += calculateSpotLight(u_spotLight, normalisedNormal, viewDirection, fragmentPosition);
 
 	//Set colour accordingly
-	colour = vec4(output, 1.0f);
+	colour = vec4(outputColour, 1.0f);
 };
 
 vec3 calculateDirectionalLight(DirectionalLight directionalLight, vec3 normal, vec3 viewDirection)
