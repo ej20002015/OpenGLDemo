@@ -10,10 +10,11 @@ VertexArray::~VertexArray()
 	glDeleteVertexArrays(1, &ID);
 }
 
-void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& vertexBufferLayout)
+void VertexArray::addBuffer(const std::shared_ptr<VertexBuffer> vertexBuffer, const VertexBufferLayout& vertexBufferLayout)
 {
+	this->vertexBuffer = vertexBuffer;
 	bind();
-	vertexBuffer.bind();
+	vertexBuffer->bind();
 	const auto& attributes = vertexBufferLayout.getAttributes();
 	uint32_t offset = 0;
 	for (uint32_t i = 0; i < attributes.size(); ++i)

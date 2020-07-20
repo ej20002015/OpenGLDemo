@@ -1,5 +1,6 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
+#include "importer.hpp"
 
 #include "Renderer.h"
 #include "Program.h"
@@ -160,7 +161,7 @@ int main()
     VertexArray vertexArrayCube;
 
     //Initialise vertex buffer with data
-    VertexBuffer vertexBufferCube(vertexDataCube, 8 * 36 * sizeof(float));
+    auto vertexBufferCube = std::make_shared<VertexBuffer>(vertexDataCube, 8 * 36 * sizeof(float));
     //Give attributes of each vertex
     VertexBufferLayout vertexBufferLayoutCube;
     //Vertex coordinates
@@ -185,7 +186,7 @@ int main()
     };
 
     VertexArray vertexArrayLight;
-    VertexBuffer vertexBufferLight(vertexDataCube, 8 * 36 * sizeof(float));
+    auto vertexBufferLight = std::make_shared<VertexBuffer>(vertexDataCube, 8 * 36 * sizeof(float));
     VertexBufferLayout vertexBufferLayoutLight;
     vertexBufferLayoutLight.push<float>(3);
     vertexBufferLayoutLight.push<float>(2);
@@ -221,15 +222,15 @@ int main()
     FreeCamera freeCamera(camera, width, height);
 
     //Get ready to render
-    Program programLighting("res/shaders/Lighting.shader");
+    Program programLighting("res/shaders/LightingModel.shader");
     Program programLightSource("res/shaders/LightSource.shader");
     
     //Get diffuse and specular maps
 
-    Texture diffuseMap("res/textures/container2.png");
+    Texture diffuseMap("res/textures/container2.png", Texture::Type::DIFFUSE);
     diffuseMap.bind(0);
 
-    Texture specularMap("res/textures/container2Specular.png");
+    Texture specularMap("res/textures/container2Specular.png", Texture::Type::SPECULAR);
     specularMap.bind(1);
     
     float rValue, gValue, bValue, camX, camZ, x = 0.0f, delta = 0.5f, radius = 10.0f;
@@ -238,10 +239,13 @@ int main()
 
     Renderer renderer;
 
+    Model backpack("res/models/backpack/backpack.obj");
+
+    glm::mat4 backpackViewMatrix(1.0f);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-
         currentFrame = glfwGetTime();
         deltaFrameTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -254,17 +258,15 @@ int main()
         glm::mat4 viewMatrix = freeCamera.getViewMatrix();
         glm::mat4 projectionMatrix = freeCamera.getProjectionMatrix();
 
-        //DRAW CUBE
+        //DRAW BACKPACK
         programLighting.bind();
 
-        programLighting.setUniformMat4f("u_modelMatrix", modelMatrixCube);
+        programLighting.setUniformMat4f("u_modelMatrix", backpackViewMatrix);
         programLighting.setUniformMat4f("u_viewMatrix", viewMatrix);
         programLighting.setUniformMat4f("u_projectionMatrix", projectionMatrix);
 
         //Set material for cube
         programLighting.setUniform1f("u_material.shininess", 32.0f);
-        programLighting.setUniform1i("u_material.diffuse", 0);
-        programLighting.setUniform1i("u_material.specular", 1);
 
         //SET LIGHT UNIFORMS
 
@@ -322,12 +324,8 @@ int main()
         programLighting.setUniform3f("u_cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
         programLighting.setUniform3f("u_cameraDirection", cameraDirection.x, cameraDirection.y, cameraDirection.z);
 
-        //Draw the four point lights
-        for (int i = 0; i < 4; ++i)
-        {
-            programLighting.setUniformMat4f("u_modelMatrix", modelMatrixCube);
-            renderer.draw(vertexArrayCube, indexBufferCube, programLighting);
-        }
+        //Draw model
+        renderer.draw(backpack, programLighting);
 
         //DRAW LIGHT
         programLightSource.bind();

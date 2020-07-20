@@ -8,6 +8,8 @@ public:
 	IndexBuffer(const uint32_t* data, uint32_t count);
 	~IndexBuffer();
 
+	IndexBuffer(const IndexBuffer& indexBuffer) = delete;
+
 	void bind() const;
 	void unbind() const;
 
