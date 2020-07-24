@@ -8,7 +8,7 @@
 Texture::Texture(const std::string& filePath, Type type)
 	: ID(0), filePath(filePath), type(type), localBuffer(nullptr), width(0), height(0), bytesPerPixel(0)
 {
-	//openGL expects pixels to start at bottom left (.png starts at the top) so y direction needs to be flipped
+	//openGL expects pixels to start at bottom left so y direction needs to be flipped
 	stbi_set_flip_vertically_on_load(1);
 
 	localBuffer = stbi_load(filePath.c_str(), &width, &height, &bytesPerPixel, 0);

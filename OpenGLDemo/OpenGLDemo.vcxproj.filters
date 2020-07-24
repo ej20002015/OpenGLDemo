@@ -54,6 +54,12 @@
     <ClCompile Include="src\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\FrameBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cubemap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Program.h">
@@ -941,6 +947,12 @@
     <ClInclude Include="src\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\FrameBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cubemap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -1356,5 +1368,7 @@
     <None Include="res\shaders\Lighting.shader" />
     <None Include="res\shaders\BasicModel.shader" />
     <None Include="res\shaders\LightingModel.shader" />
+    <None Include="res\shaders\Framebuffer.shader" />
+    <None Include="res\shaders\Cubemap.shader" />
   </ItemGroup>
 </Project>

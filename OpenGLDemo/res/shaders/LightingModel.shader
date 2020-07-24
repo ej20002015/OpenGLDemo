@@ -76,6 +76,10 @@ struct SpotLight
 
 vec3 calculateSpotLight(SpotLight spotLight, vec3 normal, vec3 viewDirection, vec3 fragmentPosition);
 
+vec3 calculateEnvironmentReflection(samplerCube environment, vec3 normalisedNormal, vec3 viewDirection);
+
+vec3 calculateEnvironmentRefraction(samplerCube environment, vec3 normalisedNormal, vec3 viewDirection, float refractiveIndexRatio);
+
 in vec3 normal;
 in vec3 fragmentPosition;
 in vec2 texCoord;
@@ -88,6 +92,9 @@ uniform vec3 u_cameraPosition;
 uniform DirectionalLight u_directionalLight;
 uniform PointLight u_pointLight[4];
 uniform SpotLight u_spotLight;
+
+uniform samplerCube u_environment;
+uniform float u_refractiveIndexRatio;
 
 const float eps = 0.0000005f;
 
@@ -106,6 +113,9 @@ void main()
 	}
 
 	outputColour += calculateSpotLight(u_spotLight, normalisedNormal, viewDirection, fragmentPosition);
+
+	outputColour = calculateEnvironmentReflection(u_environment, normalisedNormal, viewDirection);
+	outputColour = calculateEnvironmentRefraction(u_environment, normalisedNormal, viewDirection, u_refractiveIndexRatio);
 
 	//Set colour accordingly
 	colour = vec4(outputColour, 1.0f);
@@ -206,4 +216,20 @@ vec3 calculateSpotLight(SpotLight spotLight, vec3 normal, vec3 viewDirection, ve
 	specular *= intensity;
 
 	return ambient + diffuse + specular;
+}
+
+vec3 calculateEnvironmentReflection(samplerCube environment, vec3 normalisedNormal, vec3 viewDirection)
+{
+	vec3 reflectedVector = reflect(-viewDirection, normalisedNormal);
+	vec3 reflectedColour = texture(environment, reflectedVector).rgb;
+	//TODO: change from using specular map to using a seperate reflection map
+	//return vec3(texture(u_material.specular0, texCoord)) * reflectedColour;
+	return reflectedColour;
+}
+
+vec3 calculateEnvironmentRefraction(samplerCube environment, vec3 normalisedNormal, vec3 viewDirection, float refractiveIndexRatio)
+{
+	vec3 refractedVector = refract(-viewDirection, normalisedNormal, refractiveIndexRatio);
+	vec3 refractedColour = texture(environment, refractedVector).rgb;
+	return refractedColour;
 }

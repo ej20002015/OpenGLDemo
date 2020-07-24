@@ -10,6 +10,8 @@
 #include "Texture.h"
 #include "PerspectiveCamera.h"
 #include "FreeCamera.h"
+#include "Framebuffer.h"
+#include "Cubemap.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
@@ -18,6 +20,7 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
+#include <array>
 
 
 float clamp(float n, float lower, float upper) 
@@ -66,6 +69,22 @@ int main()
 
     std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
 
+    Framebuffer::FramebufferSpecification specification;
+    specification.width = (uint32_t)width;
+    specification.height = (uint32_t)height;
+    specification.samples = 8;
+
+    Framebuffer framebuffer(specification);
+    framebuffer.bind();
+
+
+    Framebuffer::FramebufferSpecification intermediateSpecification;
+    intermediateSpecification.width = (uint32_t)width;
+    intermediateSpecification.height = (uint32_t)height;
+    intermediateSpecification.samples = 1;
+
+    Framebuffer intermediateFramebuffer(intermediateSpecification);
+
     Renderer::initDebug();
 
     //Set up glfw mouse input
@@ -74,49 +93,74 @@ int main()
     //Set frame rate of window
     glfwSwapInterval(1);
 
+    //DEFINE PLANE TO RENDER FRAMEBUFFER COLOUR TEXTURE TO
+    float vertexDataSquare[] =
+    {
+        -1.0f, -1.0f,  0.0f, 0.0f, //bottom-left
+         1.0f,  1.0f,  1.0f, 1.0f, //top-right
+        -1.0f,  1.0f,  0.0f, 1.0f, //top-left
+         1.0f, -1.0f,  1.0f, 0.0f  //bottom-right
+    };
+
+    uint32_t indexesSquare[] =
+    {
+        0, 1, 2,
+        0, 3, 1
+    };
+
+    auto vertexBufferSquare = std::make_shared<VertexBuffer>(vertexDataSquare, 4 * 4 * sizeof(float));
+    VertexBufferLayout squareLayout;
+    squareLayout.push<float>(2);
+    squareLayout.push<float>(2);
+    VertexArray vertexArraySquare;
+    vertexArraySquare.addBuffer(vertexBufferSquare, squareLayout);
+    IndexBuffer indexBufferSquare(indexesSquare, 6);
+    
+
     float vertexDataCube[] =
     {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f
+        // back face
+       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,// bottom-left
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,  0.0f,  0.0f, -1.0f,// bottom-right    
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,// top-right              
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,// top-right
+       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  0.0f, -1.0f,// top-left
+       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,// bottom-left                
+       // front face
+       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,// bottom-left
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,// top-right
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  0.0f,  1.0f,// bottom-right        
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,// top-right
+       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,// bottom-left
+       -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,  0.0f,  0.0f,  1.0f,// top-left        
+       // left face
+       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,// top-right
+       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,// bottom-left
+       -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,  0.0f,  0.0f,// top-left       
+       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,// bottom-left
+       -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,// top-right
+       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f,// bottom-right
+       // right face
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,// top-left
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f,// top-right      
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,// bottom-right          
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,// bottom-right
+        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f,// bottom-left
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,// top-left
+       // bottom face          
+       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,// top-right
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,// bottom-left
+        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,  0.0f, -1.0f,  0.0f,// top-left        
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,  0.0f, -1.0f,  0.0f,// bottom-left
+       -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,  0.0f, -1.0f,  0.0f,// top-right
+       -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,  0.0f, -1.0f,  0.0f,// bottom-right
+       // top face
+       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f,// top-left
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,  0.0f,  1.0f,  0.0f,// top-right
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,// bottom-right                 
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,// bottom-right
+       -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  1.0f,  0.0f,// bottom-left  
+       -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f // top-left
     };
 
     uint32_t triangleIndexesCube[] =
@@ -146,6 +190,9 @@ int main()
 
     //Enable z-buffer
     glEnable(GL_DEPTH_TEST);
+
+    //Enable face culling
+    glEnable(GL_CULL_FACE);
 
     //SET UP DATA FOR CUBE
 
@@ -181,8 +228,8 @@ int main()
     {
         glm::vec3(1.0f, 1.0f, 1.5f),
         glm::vec3(-1.0f, 1.0f, 1.5f),
-        glm::vec3(1.0f, -1.0f, -1.5f),
-        glm::vec3(-1.0f, -1.0f, -1.5f),
+        glm::vec3(1.0f, 1.0f, -1.5f),
+        glm::vec3(-1.0f, 1.0f, -1.5f),
     };
 
     VertexArray vertexArrayLight;
@@ -224,6 +271,72 @@ int main()
     //Get ready to render
     Program programLighting("res/shaders/LightingModel.shader");
     Program programLightSource("res/shaders/LightSource.shader");
+    Program programFramebuffer("res/shaders/Framebuffer.shader");
+    Program programCubemap("res/shaders/Cubemap.shader");
+
+    //Create cubemap
+    std::array<std::string, 6> filePaths;
+    filePaths[0] = "res/textures/cubemaps/skybox/right.jpg";
+    filePaths[1] = "res/textures/cubemaps/skybox/left.jpg";
+    filePaths[2] = "res/textures/cubemaps/skybox/top.jpg";
+    filePaths[3] = "res/textures/cubemaps/skybox/bottom.jpg";
+    filePaths[4] = "res/textures/cubemaps/skybox/front.jpg";
+    filePaths[5] = "res/textures/cubemaps/skybox/back.jpg";
+
+    Cubemap cubemap(filePaths);
+
+    float vertexDataCubemap[] =
+    {
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+
+    auto vertexBufferCubemap = std::make_shared<VertexBuffer>(vertexDataCubemap, 3 * 36 * sizeof(float));
+    VertexBufferLayout vertexBufferCubemapLayout;
+    vertexBufferCubemapLayout.push<float>(3);
+    VertexArray vertexArrayCubemap;
+    vertexArrayCubemap.addBuffer(vertexBufferCubemap, vertexBufferCubemapLayout);
+
+    IndexBuffer indexBufferCubemap(triangleIndexesCube, 36);
     
     //Get diffuse and specular maps
 
@@ -242,10 +355,12 @@ int main()
     Model backpack("res/models/backpack/backpack.obj");
 
     glm::mat4 backpackViewMatrix(1.0f);
+    backpackViewMatrix = glm::scale(backpackViewMatrix, { 0.2f, 0.2f, 0.2f });
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        framebuffer.bind();
         currentFrame = glfwGetTime();
         deltaFrameTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -267,6 +382,11 @@ int main()
 
         //Set material for cube
         programLighting.setUniform1f("u_material.shininess", 32.0f);
+
+        //Set environment reflection and refraction uniforms
+        cubemap.bind(5);
+        programLighting.setUniform1i("u_environment", 5);
+        programLighting.setUniform1f("u_refractiveIndexRatio", 1.0f / 1.52f);
 
         //SET LIGHT UNIFORMS
 
@@ -341,6 +461,33 @@ int main()
             programLightSource.setUniformMat4f("u_modelMatrix", pointLightModelMatrices[i]);
             renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
         }
+
+        //DRAW CUBEMAP
+        glDepthFunc(GL_LEQUAL);
+        cubemap.bind();
+
+        programCubemap.bind();
+
+        programCubemap.setUniform1i("u_cubemap", 0);
+        glm::mat4 viewWithNoTranslation = glm::mat4(glm::mat3(viewMatrix));
+        programCubemap.setUniformMat4f("u_viewMatrix", viewWithNoTranslation);
+        programCubemap.setUniformMat4f("u_projectionMatrix", projectionMatrix);
+
+        renderer.draw(vertexArrayCubemap, indexBufferCubemap, programCubemap);
+        glDepthFunc(GL_LESS);
+
+        //DRAW COLOUR ATTACHMENT TEXTURE OF FRAMEBUFFER TO SCREEN
+        framebuffer.blit(intermediateFramebuffer);
+        framebuffer.unbind();
+        intermediateFramebuffer.unbind();
+
+        renderer.clear();
+        intermediateFramebuffer.bindColourAttachment(0);
+
+        programFramebuffer.bind();
+        programFramebuffer.setUniform1i("u_framebufferTexture", 0);
+
+        renderer.draw(vertexArraySquare, indexBufferSquare, programFramebuffer);
 
         x += delta * deltaFrameTime;
 
