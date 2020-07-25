@@ -114,8 +114,8 @@ void main()
 
 	outputColour += calculateSpotLight(u_spotLight, normalisedNormal, viewDirection, fragmentPosition);
 
-	outputColour = calculateEnvironmentReflection(u_environment, normalisedNormal, viewDirection);
-	outputColour = calculateEnvironmentRefraction(u_environment, normalisedNormal, viewDirection, u_refractiveIndexRatio);
+	outputColour += calculateEnvironmentReflection(u_environment, normalisedNormal, viewDirection) * 0.2f;
+	//outputColour = calculateEnvironmentRefraction(u_environment, normalisedNormal, viewDirection, u_refractiveIndexRatio);
 
 	//Set colour accordingly
 	colour = vec4(outputColour, 1.0f);
@@ -137,9 +137,9 @@ vec3 calculateDirectionalLight(DirectionalLight directionalLight, vec3 normal, v
 	diffuse = directionalLight.diffuse * (diffusedValue * vec3(texture(u_material.diffuse0, texCoord)));
 
 	//Set up specular lighting
-	vec3 reflectedLightDirection = reflect(-lightDirection, normal);
+	vec3 halfwayDirection = normalize(lightDirection + viewDirection);
 
-	float specularValue = pow(max(dot(viewDirection, reflectedLightDirection), 0.0f), u_material.shininess);
+	float specularValue = pow(max(dot(normal, halfwayDirection), 0.0f), u_material.shininess);
 	specular = directionalLight.specular * (specularValue * vec3(texture(u_material.specular0, texCoord)));
 
 	return ambient + diffuse + specular;
@@ -161,9 +161,9 @@ vec3 calculatePointLight(PointLight pointLight, vec3 normal, vec3 viewDirection,
 	diffuse = pointLight.diffuse * (diffusedValue * vec3(texture(u_material.diffuse0, texCoord)));
 
 	//Set up specular lighting
-	vec3 reflectedLightDirection = reflect(-lightDirection, normal);
+	vec3 halfwayDirection = normalize(lightDirection + viewDirection);
 
-	float specularValue = pow(max(dot(viewDirection, reflectedLightDirection), 0.0f), u_material.shininess);
+	float specularValue = pow(max(dot(normal, halfwayDirection), 0.0f), u_material.shininess);
 	specular = pointLight.specular * (specularValue * vec3(texture(u_material.specular0, texCoord)));
 
 
@@ -194,9 +194,9 @@ vec3 calculateSpotLight(SpotLight spotLight, vec3 normal, vec3 viewDirection, ve
 	diffuse = spotLight.diffuse * (diffusedValue * vec3(texture(u_material.diffuse0, texCoord)));
 
 	//Set up specular lighting
-	vec3 reflectedLightDirection = reflect(-lightDirection, normal);
+	vec3 halfwayDirection = normalize(lightDirection + viewDirection);
 
-	float specularValue = pow(max(dot(viewDirection, reflectedLightDirection), 0.0f), u_material.shininess);
+	float specularValue = pow(max(dot(normal, halfwayDirection), 0.0f), u_material.shininess);
 	specular = spotLight.specular * (specularValue * vec3(texture(u_material.specular0, texCoord)));
 
 	//Calulate attenuation factor and adjust light values accordingly

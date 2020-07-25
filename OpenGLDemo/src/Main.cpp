@@ -255,7 +255,7 @@ int main()
     glm::mat4 pointLightModelMatrices[4];
     for (int i = 0; i < 4; ++i)
     {
-        pointLightPositions[i] *= 5.0f;
+        pointLightPositions[i] *= 2.0f;
         pointLightModelMatrices[i] = glm::translate(glm::mat4(1.0f), pointLightPositions[i]);
         pointLightModelMatrices[i] = glm::scale(pointLightModelMatrices[i], glm::vec3(0.4f));
     }
@@ -353,9 +353,10 @@ int main()
     Renderer renderer;
 
     Model backpack("res/models/backpack/backpack.obj");
+    glm::mat4 backpackViewMatrix = glm::scale(glm::mat4(1.0f), { 0.2f, 0.2f, 0.2f });
 
-    glm::mat4 backpackViewMatrix(1.0f);
-    backpackViewMatrix = glm::scale(backpackViewMatrix, { 0.2f, 0.2f, 0.2f });
+    Model woodenFloor("res/models/woodenFloor/woodenFloor.obj");
+    glm::mat4 woodenFloorViewMatix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -380,7 +381,7 @@ int main()
         programLighting.setUniformMat4f("u_viewMatrix", viewMatrix);
         programLighting.setUniformMat4f("u_projectionMatrix", projectionMatrix);
 
-        //Set material for cube
+        //Set material for backpack
         programLighting.setUniform1f("u_material.shininess", 32.0f);
 
         //Set environment reflection and refraction uniforms
@@ -403,9 +404,13 @@ int main()
         programLighting.setUniform3f("u_directionalLight.direction", -0.2f, -1.0f, -0.3f);
 
 
-        programLighting.setUniform3f("u_directionalLight.ambient", ambient.x, ambient.y, ambient.z);
+        /*programLighting.setUniform3f("u_directionalLight.ambient", ambient.x, ambient.y, ambient.z);
         programLighting.setUniform3f("u_directionalLight.diffuse", diffuse.x, diffuse.y, diffuse.z);
-        programLighting.setUniform3f("u_directionalLight.specular", 1.0f, 1.0f, 1.0f);
+        programLighting.setUniform3f("u_directionalLight.specular", 1.0f, 1.0f, 1.0f);*/
+
+        programLighting.setUniform3f("u_directionalLight.ambient", 0.1f, 0.1f, 0.1f);
+        programLighting.setUniform3f("u_directionalLight.diffuse", 0.1f, 0.1f, 0.1f);
+        programLighting.setUniform3f("u_directionalLight.specular", 0.0f, 0.0f, 0.0f);
 
         //Set uniforms for 4 point lights
         
@@ -434,8 +439,8 @@ int main()
         programLighting.setUniform3f("u_spotLight.specular", 1.0f, 1.0f, 1.0f);
 
         programLighting.setUniform1f("u_spotLight.constantTerm", 1.0f);
-        programLighting.setUniform1f("u_spotLight.linearTerm", 0.09f);
-        programLighting.setUniform1f("u_spotLight.quadraticTerm", 0.032f);
+        programLighting.setUniform1f("u_spotLight.linearTerm", 0.22f);
+        programLighting.setUniform1f("u_spotLight.quadraticTerm", 0.2f);
 
         programLighting.setUniform1f("u_spotLight.cutoff", glm::cos(glm::radians(15.5f)));
         programLighting.setUniform1f("u_spotLight.outerCutoff", glm::cos(glm::radians(21.5f)));
@@ -446,6 +451,16 @@ int main()
 
         //Draw model
         renderer.draw(backpack, programLighting);
+
+        //DRAW WOODEN FLOOR
+        programLighting.bind();
+
+        programLighting.setUniformMat4f("u_modelMatrix", woodenFloorViewMatix);
+
+        //Set material for wooden floor
+        programLighting.setUniform1f("u_material.shininess", 0.5f);
+
+        renderer.draw(woodenFloor, programLighting);
 
         //DRAW LIGHT
         programLightSource.bind();
