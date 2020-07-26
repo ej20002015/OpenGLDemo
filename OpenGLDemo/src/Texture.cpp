@@ -25,11 +25,11 @@ Texture::Texture(const std::string& filePath, Type type)
 		format = GL_RED;
 		break;
 	case 3:
-		internalFormat = GL_RGB8;
+		internalFormat = (type == Type::DIFFUSE) ? GL_SRGB8 : GL_RGB8;
 		format = GL_RGB;
 		break;
 	case 4:
-		internalFormat = GL_RGBA8;
+		internalFormat = (type == Type::DIFFUSE) ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 		format = GL_RGBA;
 		break;
 	default:

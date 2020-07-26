@@ -408,8 +408,8 @@ int main()
         programLighting.setUniform3f("u_directionalLight.diffuse", diffuse.x, diffuse.y, diffuse.z);
         programLighting.setUniform3f("u_directionalLight.specular", 1.0f, 1.0f, 1.0f);*/
 
-        programLighting.setUniform3f("u_directionalLight.ambient", 0.1f, 0.1f, 0.1f);
-        programLighting.setUniform3f("u_directionalLight.diffuse", 0.1f, 0.1f, 0.1f);
+        programLighting.setUniform3f("u_directionalLight.ambient", 0.0f, 0.0f, 0.0f);
+        programLighting.setUniform3f("u_directionalLight.diffuse", 0.0f, 0.0f, 0.0f);
         programLighting.setUniform3f("u_directionalLight.specular", 0.0f, 0.0f, 0.0f);
 
         //Set uniforms for 4 point lights
@@ -423,8 +423,8 @@ int main()
             programLighting.setUniform3f("u_pointLight[" + std::to_string(i) + "].specular", 1.0f, 1.0f, 1.0f);
                                                        
             programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].constantTerm", 1.0f);
-            programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].linearTerm", 0.09f);
-            programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].quadraticTerm", 0.032f);
+            programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].linearTerm", 0.35f);
+            programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].quadraticTerm", 0.0f);
         }
 
         //Set uniforms for spotlight coming from the camera
@@ -440,7 +440,7 @@ int main()
 
         programLighting.setUniform1f("u_spotLight.constantTerm", 1.0f);
         programLighting.setUniform1f("u_spotLight.linearTerm", 0.22f);
-        programLighting.setUniform1f("u_spotLight.quadraticTerm", 0.2f);
+        programLighting.setUniform1f("u_spotLight.quadraticTerm", 0.0f);
 
         programLighting.setUniform1f("u_spotLight.cutoff", glm::cos(glm::radians(15.5f)));
         programLighting.setUniform1f("u_spotLight.outerCutoff", glm::cos(glm::radians(21.5f)));

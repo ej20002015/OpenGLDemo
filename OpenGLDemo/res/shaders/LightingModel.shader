@@ -114,7 +114,7 @@ void main()
 
 	outputColour += calculateSpotLight(u_spotLight, normalisedNormal, viewDirection, fragmentPosition);
 
-	outputColour += calculateEnvironmentReflection(u_environment, normalisedNormal, viewDirection) * 0.2f;
+	outputColour += calculateEnvironmentReflection(u_environment, normalisedNormal, viewDirection) * 0.05f;
 	//outputColour = calculateEnvironmentRefraction(u_environment, normalisedNormal, viewDirection, u_refractiveIndexRatio);
 
 	//Set colour accordingly

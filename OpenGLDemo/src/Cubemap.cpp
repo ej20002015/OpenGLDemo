@@ -27,11 +27,11 @@ Cubemap::Cubemap(const std::array<std::string, 6> filePaths)
 			format = GL_RED;
 			break;
 		case 3:
-			internalFormat = GL_RGB8;
+			internalFormat = GL_SRGB8;
 			format = GL_RGB;
 			break;
 		case 4:
-			internalFormat = GL_RGBA8;
+			internalFormat = GL_SRGB8_ALPHA8;
 			format = GL_RGBA;
 			break;
 		default:

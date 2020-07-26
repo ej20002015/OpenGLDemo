@@ -21,9 +21,12 @@ layout(location = 0) out vec4 color;
 
 uniform sampler2D u_framebufferTexture;
 
+const float gamma = 2.2f;
+
 void main()
 {
     color = texture(u_framebufferTexture, texCoord);
+    color.rgb = pow(color.rgb, vec3(1.0f / gamma));
     /*float average = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
     color = vec4(average, average, average, color.z);*/
 }
