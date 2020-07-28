@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Cubemap.cpp" />
+    <ClCompile Include="src\DepthMap.cpp" />
     <ClCompile Include="src\FrameBuffer.cpp" />
     <ClCompile Include="src\FreeCamera.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
@@ -177,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Cubemap.h" />
+    <ClInclude Include="src\DepthMap.h" />
     <ClInclude Include="src\FrameBuffer.h" />
     <ClInclude Include="src\FreeCamera.h" />
     <ClInclude Include="src\Mesh.h" />
@@ -481,6 +483,7 @@
     <None Include="res\shaders\LightingModel.shader" />
     <None Include="res\shaders\Lighting.shader" />
     <None Include="res\shaders\LightSource.shader" />
+    <None Include="res\shaders\SimpleDepth.shader" />
     <None Include="res\shaders\Texture.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />

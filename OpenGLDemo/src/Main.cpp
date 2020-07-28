@@ -12,6 +12,7 @@
 #include "FreeCamera.h"
 #include "Framebuffer.h"
 #include "Cubemap.h"
+#include "DepthMap.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
@@ -69,6 +70,8 @@ int main()
 
     std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
 
+    Renderer::initDebug();
+
     Framebuffer::FramebufferSpecification specification;
     specification.width = (uint32_t)width;
     specification.height = (uint32_t)height;
@@ -85,7 +88,8 @@ int main()
 
     Framebuffer intermediateFramebuffer(intermediateSpecification);
 
-    Renderer::initDebug();
+
+    DepthMap depthMap(1024, 1024);
 
     //Set up glfw mouse input
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -273,6 +277,7 @@ int main()
     Program programLightSource("res/shaders/LightSource.shader");
     Program programFramebuffer("res/shaders/Framebuffer.shader");
     Program programCubemap("res/shaders/Cubemap.shader");
+    Program programDepthMap("res/shaders/SimpleDepth.shader");
 
     //Create cubemap
     std::array<std::string, 6> filePaths;
@@ -361,21 +366,45 @@ int main()
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-        framebuffer.bind();
         currentFrame = glfwGetTime();
         deltaFrameTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         processInput(window, deltaFrameTime, freeCamera);
 
+        //Render to depth map
+        depthMap.bind();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glm::mat4 lightProjectionMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.001f, 100.0f);
+        glm::mat4 lightViewMatrix = glm::lookAt(pointLightPositions[0], glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 lightViewProjectionMatrix = lightProjectionMatrix * lightViewMatrix;
+        programDepthMap.bind();
+        programDepthMap.setUniformMat4f("u_lightViewProjectionMatrix", lightViewProjectionMatrix);
+
+
+        //render scene for depth map
+        programDepthMap.setUniformMat4f("u_modelMatrix", backpackViewMatrix);
+        renderer.draw(backpack, programDepthMap);
+
+        programDepthMap.setUniformMat4f("u_modelMatrix", woodenFloorViewMatix);
+        renderer.draw(woodenFloor, programDepthMap);
+
         /* Render here */
+        framebuffer.bind();
         renderer.clear();
 
         glm::mat4 viewMatrix = freeCamera.getViewMatrix();
         glm::mat4 projectionMatrix = freeCamera.getProjectionMatrix();
 
-        //DRAW BACKPACK
         programLighting.bind();
+        
+        //Set uniform for shadow mapping
+        programLighting.setUniformMat4f("u_lightViewProjectionMatrix", lightViewProjectionMatrix);
+
+        depthMap.bindDepthAttachment(10);
+        programLighting.setUniform1i("u_shadowMap", 10);
+
+        //DRAW BACKPACK
 
         programLighting.setUniformMat4f("u_modelMatrix", backpackViewMatrix);
         programLighting.setUniformMat4f("u_viewMatrix", viewMatrix);
@@ -401,20 +430,20 @@ int main()
 
 
         //Set uniforms for directional light
-        programLighting.setUniform3f("u_directionalLight.direction", -0.2f, -1.0f, -0.3f);
+        //programLighting.setUniform3f("u_directionalLight.direction", -0.2f, -1.0f, -0.3f);
 
 
-        /*programLighting.setUniform3f("u_directionalLight.ambient", ambient.x, ambient.y, ambient.z);
-        programLighting.setUniform3f("u_directionalLight.diffuse", diffuse.x, diffuse.y, diffuse.z);
-        programLighting.setUniform3f("u_directionalLight.specular", 1.0f, 1.0f, 1.0f);*/
+        ///*programLighting.setUniform3f("u_directionalLight.ambient", ambient.x, ambient.y, ambient.z);
+        //programLighting.setUniform3f("u_directionalLight.diffuse", diffuse.x, diffuse.y, diffuse.z);
+        //programLighting.setUniform3f("u_directionalLight.specular", 1.0f, 1.0f, 1.0f);*/
 
-        programLighting.setUniform3f("u_directionalLight.ambient", 0.0f, 0.0f, 0.0f);
-        programLighting.setUniform3f("u_directionalLight.diffuse", 0.0f, 0.0f, 0.0f);
-        programLighting.setUniform3f("u_directionalLight.specular", 0.0f, 0.0f, 0.0f);
+        //programLighting.setUniform3f("u_directionalLight.ambient", 0.0f, 0.0f, 0.0f);
+        //programLighting.setUniform3f("u_directionalLight.diffuse", 0.0f, 0.0f, 0.0f);
+        //programLighting.setUniform3f("u_directionalLight.specular", 0.0f, 0.0f, 0.0f);
 
         //Set uniforms for 4 point lights
         
-        for (int i = 0; i < 4; ++i)
+        /*for (int i = 0; i < 4; ++i)
         {
             programLighting.setUniform3f("u_pointLight[" + std::to_string(i) + "].position", pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
 
@@ -425,13 +454,23 @@ int main()
             programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].constantTerm", 1.0f);
             programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].linearTerm", 0.35f);
             programLighting.setUniform1f("u_pointLight[" + std::to_string(i) + "].quadraticTerm", 0.0f);
-        }
+        }*/
+
+        programLighting.setUniform3f("u_pointLight.position", pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
+
+        programLighting.setUniform3f("u_pointLight.ambient", ambient.x, ambient.y, ambient.z);
+        programLighting.setUniform3f("u_pointLight.diffuse", diffuse.x, diffuse.y, diffuse.z);
+        programLighting.setUniform3f("u_pointLight.specular", 1.0f, 1.0f, 1.0f);
+
+        programLighting.setUniform1f("u_pointLight.constantTerm", 1.0f);
+        programLighting.setUniform1f("u_pointLight.linearTerm", 0.25f);
+        programLighting.setUniform1f("u_pointLight.quadraticTerm", 0.0f);
 
         //Set uniforms for spotlight coming from the camera
         glm::vec3 cameraPosition = freeCamera.getPerspectiveCamera().getPosition();
         glm::vec3 cameraDirection = freeCamera.getDirection();
 
-        programLighting.setUniform3f("u_spotLight.position", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+       /*programLighting.setUniform3f("u_spotLight.position", cameraPosition.x, cameraPosition.y, cameraPosition.z);
         programLighting.setUniform3f("u_spotLight.direction", cameraDirection.x, cameraDirection.y, cameraDirection.z);
 
         programLighting.setUniform3f("u_spotLight.ambient", ambient.x, ambient.y, ambient.z);
@@ -443,7 +482,7 @@ int main()
         programLighting.setUniform1f("u_spotLight.quadraticTerm", 0.0f);
 
         programLighting.setUniform1f("u_spotLight.cutoff", glm::cos(glm::radians(15.5f)));
-        programLighting.setUniform1f("u_spotLight.outerCutoff", glm::cos(glm::radians(21.5f)));
+        programLighting.setUniform1f("u_spotLight.outerCutoff", glm::cos(glm::radians(21.5f)));*/
         
         //Set camera position
         programLighting.setUniform3f("u_cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
@@ -471,11 +510,14 @@ int main()
         programLightSource.setUniformMat4f("u_projectionMatrix", projectionMatrix);
 
         //Draw the four point lights
-        for (int i = 0; i < 4; ++i)
+        /*for (int i = 0; i < 4; ++i)
         {
             programLightSource.setUniformMat4f("u_modelMatrix", pointLightModelMatrices[i]);
             renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
-        }
+        }*/
+
+        programLightSource.setUniformMat4f("u_modelMatrix", pointLightModelMatrices[0]);
+        renderer.draw(vertexArrayLight, indexBufferLight, programLightSource);
 
         //DRAW CUBEMAP
         glDepthFunc(GL_LEQUAL);

@@ -10,9 +10,9 @@ Framebuffer::Framebuffer(const FramebufferSpecification& specification)
 
 Framebuffer::~Framebuffer()
 {
-	glDeleteFramebuffers(1, &ID);
 	glDeleteTextures(1, &colourAttachmentID);
 	glDeleteTextures(1, &depthAttachmentID);
+	glDeleteFramebuffers(1, &ID);
 }
 
 void Framebuffer::bind()
@@ -55,9 +55,9 @@ void Framebuffer::invalidate()
 	//Delete previous buffer and attachments if initialised
 	if (ID)
 	{
-		glDeleteFramebuffers(1, &ID);
 		glDeleteTextures(1, &colourAttachmentID);
 		glDeleteTextures(1, &depthAttachmentID);
+		glDeleteFramebuffers(1, &ID);
 	}
 
 	//Create framebuffer
@@ -72,8 +72,6 @@ void Framebuffer::invalidate()
 		//Colour attachment
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colourAttachmentID);
 		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, specification.samples, GL_RGBA8, specification.width, specification.height, true);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colourAttachmentID, 0);
 

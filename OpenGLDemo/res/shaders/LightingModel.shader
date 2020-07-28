@@ -8,9 +8,11 @@ layout(location = 2) in vec2 a_texCoord;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_viewMatrix;
 uniform mat4 u_projectionMatrix;
+uniform mat4 u_lightViewProjectionMatrix;
 
 out vec3 normal;
 out vec3 fragmentPosition;
+out vec4 fragmentPositionLightSpace;
 out vec2 texCoord;
 
 void main()
@@ -18,6 +20,7 @@ void main()
 	gl_Position = u_projectionMatrix * u_viewMatrix * u_modelMatrix * vec4(a_position, 1.0f);
 	normal = mat3(transpose(inverse(u_modelMatrix))) * a_normal;
 	fragmentPosition = vec3(u_modelMatrix * vec4(a_position, 1.0f));
+	fragmentPositionLightSpace = u_lightViewProjectionMatrix * vec4(fragmentPosition, 1.0);
 	texCoord = a_texCoord;
 };
 
@@ -55,7 +58,14 @@ struct PointLight
 	float quadraticTerm;
 };
 
-vec3 calculatePointLight(PointLight pointLight, vec3 normal, vec3 viewDirection, vec3 fragmentPosition);
+struct LightElements
+{
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+LightElements calculatePointLight(PointLight pointLight, vec3 normal, vec3 viewDirection, vec3 fragmentPosition);
 
 struct SpotLight
 {
@@ -80,8 +90,11 @@ vec3 calculateEnvironmentReflection(samplerCube environment, vec3 normalisedNorm
 
 vec3 calculateEnvironmentRefraction(samplerCube environment, vec3 normalisedNormal, vec3 viewDirection, float refractiveIndexRatio);
 
+float calculateShadow(sampler2D shadowMap, vec4 fragmentPositionLightSpace);
+
 in vec3 normal;
 in vec3 fragmentPosition;
+in vec4 fragmentPositionLightSpace;
 in vec2 texCoord;
 
 layout(location = 0) out vec4 colour;
@@ -89,12 +102,14 @@ layout(location = 0) out vec4 colour;
 uniform Material u_material;
 uniform vec3 u_cameraPosition;
 
-uniform DirectionalLight u_directionalLight;
-uniform PointLight u_pointLight[4];
-uniform SpotLight u_spotLight;
+//uniform DirectionalLight u_directionalLight;
+uniform PointLight u_pointLight;
+//uniform SpotLight u_spotLight;
 
 uniform samplerCube u_environment;
 uniform float u_refractiveIndexRatio;
+
+uniform sampler2D u_shadowMap;
 
 const float eps = 0.0000005f;
 
@@ -105,16 +120,23 @@ void main()
 	vec3 viewDirection = normalize(u_cameraPosition - fragmentPosition);
 
 	//Calculate contribution of each light
-	vec3 outputColour = calculateDirectionalLight(u_directionalLight, normalisedNormal, viewDirection);
+	//vec3 outputColour = calculateDirectionalLight(u_directionalLight, normalisedNormal, viewDirection);
 
-	for (int i = 0; i < 4; ++i)
+	/*for (int i = 0; i < 4; ++i)
 	{
 		outputColour += calculatePointLight(u_pointLight[i], normalisedNormal, viewDirection, fragmentPosition);
-	}
+	}*/
 
-	outputColour += calculateSpotLight(u_spotLight, normalisedNormal, viewDirection, fragmentPosition);
+	LightElements outputColourPointLight = calculatePointLight(u_pointLight, normalisedNormal, viewDirection, fragmentPosition);
 
-	outputColour += calculateEnvironmentReflection(u_environment, normalisedNormal, viewDirection) * 0.05f;
+	//CALCULATE SHADOW
+	float shadow = calculateShadow(u_shadowMap, fragmentPositionLightSpace);
+
+	vec3 outputColour = outputColourPointLight.ambient + ((1.0f - shadow) * outputColourPointLight.ambient) + ((1.0f - shadow) * outputColourPointLight.specular);
+
+	//outputColour += calculateSpotLight(u_spotLight, normalisedNormal, viewDirection, fragmentPosition);
+
+	//outputColour += calculateEnvironmentReflection(u_environment, normalisedNormal, viewDirection) * 0.05f;
 	//outputColour = calculateEnvironmentRefraction(u_environment, normalisedNormal, viewDirection, u_refractiveIndexRatio);
 
 	//Set colour accordingly
@@ -145,7 +167,7 @@ vec3 calculateDirectionalLight(DirectionalLight directionalLight, vec3 normal, v
 	return ambient + diffuse + specular;
 }
 
-vec3 calculatePointLight(PointLight pointLight, vec3 normal, vec3 viewDirection, vec3 fragmentPosition)
+LightElements calculatePointLight(PointLight pointLight, vec3 normal, vec3 viewDirection, vec3 fragmentPosition)
 {
 	vec3 ambient = vec3(0.0f);
 	vec3 diffuse = vec3(0.0f);
@@ -175,7 +197,12 @@ vec3 calculatePointLight(PointLight pointLight, vec3 normal, vec3 viewDirection,
 	diffuse *= attenuation;
 	specular *= attenuation;
 
-	return ambient + diffuse + specular;
+	LightElements returnValue;
+	returnValue.ambient = ambient;
+	returnValue.diffuse = diffuse;
+	returnValue.specular = specular;
+
+	return returnValue;
 }
 
 vec3 calculateSpotLight(SpotLight spotLight, vec3 normal, vec3 viewDirection, vec3 fragmentPosition)
@@ -232,4 +259,18 @@ vec3 calculateEnvironmentRefraction(samplerCube environment, vec3 normalisedNorm
 	vec3 refractedVector = refract(-viewDirection, normalisedNormal, refractiveIndexRatio);
 	vec3 refractedColour = texture(environment, refractedVector).rgb;
 	return refractedColour;
+}
+
+float calculateShadow(sampler2D shadowMap, vec4 fragmentPositionLightSpace)
+{
+	vec3 projectedCoordinates = fragmentPositionLightSpace.xyz / fragmentPositionLightSpace.w;
+	projectedCoordinates = projectedCoordinates * 0.5f + 0.5f;
+
+	float closestDepth = texture(shadowMap, projectedCoordinates.xy).r;
+	float currentDepth = projectedCoordinates.z;
+
+	float bias = 0.0000005;
+	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	return shadow;
 }
