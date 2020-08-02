@@ -90,7 +90,7 @@ vec3 calculateEnvironmentReflection(samplerCube environment, vec3 normalisedNorm
 
 vec3 calculateEnvironmentRefraction(samplerCube environment, vec3 normalisedNormal, vec3 viewDirection, float refractiveIndexRatio);
 
-float calculateShadow(sampler2D shadowMap, vec4 fragmentPositionLightSpace);
+float calculateShadow(sampler2D shadowMap, vec4 fragmentPositionLightSpace, vec3 normalisedNormal, vec3 lightPosition, vec3 fragmentPosition);
 
 in vec3 normal;
 in vec3 fragmentPosition;
@@ -130,7 +130,7 @@ void main()
 	LightElements outputColourPointLight = calculatePointLight(u_pointLight, normalisedNormal, viewDirection, fragmentPosition);
 
 	//CALCULATE SHADOW
-	float shadow = calculateShadow(u_shadowMap, fragmentPositionLightSpace);
+	float shadow = calculateShadow(u_shadowMap, fragmentPositionLightSpace, normalisedNormal, u_pointLight.position, fragmentPosition);
 
 	vec3 outputColour = outputColourPointLight.ambient + ((1.0f - shadow) * outputColourPointLight.ambient) + ((1.0f - shadow) * outputColourPointLight.specular);
 
@@ -261,16 +261,20 @@ vec3 calculateEnvironmentRefraction(samplerCube environment, vec3 normalisedNorm
 	return refractedColour;
 }
 
-float calculateShadow(sampler2D shadowMap, vec4 fragmentPositionLightSpace)
+float calculateShadow(sampler2D shadowMap, vec4 fragmentPositionLightSpace, vec3 normalisedNormal, vec3 lightPosition, vec3 fragmentPosition)
 {
+	if (fragmentPositionLightSpace.w < 1.0f)
+		return 0.0f;
+
 	vec3 projectedCoordinates = fragmentPositionLightSpace.xyz / fragmentPositionLightSpace.w;
 	projectedCoordinates = projectedCoordinates * 0.5f + 0.5f;
 
 	float closestDepth = texture(shadowMap, projectedCoordinates.xy).r;
 	float currentDepth = projectedCoordinates.z;
 
-	float bias = 0.0000005;
-	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+	vec3 lightDirection = normalize(lightPosition - fragmentPosition);
+	float bias = max(0.000005f * (1.0f - dot(normalisedNormal, lightDirection)), 0.0000005f);
+	float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
 
 	return shadow;
 }

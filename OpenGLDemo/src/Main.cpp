@@ -374,6 +374,7 @@ int main()
 
         //Render to depth map
         depthMap.bind();
+        glCullFace(GL_FRONT);
         glClear(GL_DEPTH_BUFFER_BIT);
         glm::mat4 lightProjectionMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.001f, 100.0f);
         glm::mat4 lightViewMatrix = glm::lookAt(pointLightPositions[0], glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -390,6 +391,8 @@ int main()
         renderer.draw(woodenFloor, programDepthMap);
 
         /* Render here */
+        glCullFace(GL_BACK);
+
         framebuffer.bind();
         renderer.clear();
 
